@@ -8,9 +8,7 @@ import base64
 from pyngrok import ngrok
 import nest_asyncio
 from uvicorn import Config, Server
-from google.colab import files
-from google.colab import drive
-drive.mount('/content/drive')
+
 
 
 app = FastAPI()
