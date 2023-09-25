@@ -1,4 +1,3 @@
-from auth_token import auth_token
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 import torch
@@ -12,6 +11,7 @@ from uvicorn import Config, Server
 from google.colab import files
 from google.colab import drive
 drive.mount('/content/drive')
+
 
 app = FastAPI()
 
@@ -38,14 +38,12 @@ def generate(prompt: str):
     image.save(buffer, format="PNG")
     imgstr = base64.b64encode(buffer.getvalue())
 
+    files.download("testimage.png")
     return Response(content=imgstr, media_type="image/png")
 
-# Start ngrok
-public_url = ngrok.connect(port=8000)
-print('Public URL:', public_url)
-
-# Run uvicorn server
+ngrok_tunnel = ngrok.connect(8000)
+print('Public URL:', ngrok_tunnel.public_url)
+nest_asyncio.apply()
 config = Config(app=app, host='0.0.0.0', port=8000)
 server = Server(config)
-nest_asyncio.apply()
 server.run()
