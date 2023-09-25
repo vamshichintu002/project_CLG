@@ -1,3 +1,4 @@
+from auth_token import auth_token
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 import torch
@@ -6,12 +7,15 @@ from diffusers import StableDiffusionPipeline
 from io import BytesIO
 import base64
 from pyngrok import ngrok
+import nest_asyncio
+from uvicorn import Config, Server
+from google.colab import files
+from google.colab import drive
+drive.mount('/content/drive')
+
 
 app = FastAPI()
 
-# ... [Rest of your code] ...
-
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -35,10 +39,12 @@ def generate(prompt: str):
     image.save(buffer, format="PNG")
     imgstr = base64.b64encode(buffer.getvalue())
 
+    files.download("testimage.png")
     return Response(content=imgstr, media_type="image/png")
 
-# Start ngrok and bind it to port 80
-public_url = ngrok.connect(port=80)
-print(" * ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}/\"".format(public_url, 80))
-
-
+ngrok_tunnel = ngrok.connect(8000)
+print('Public URL:', ngrok_tunnel.public_url)
+nest_asyncio.apply()
+config = Config(app=app, host='0.0.0.0', port=8000)
+server = Server(config)
+server.run()
